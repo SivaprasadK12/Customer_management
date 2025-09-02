@@ -38,4 +38,3 @@ exports.deleteAddress = (req, res) => {
     res.json({ message: "Address deleted", data });
   });
 };
-
