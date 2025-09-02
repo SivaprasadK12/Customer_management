@@ -1,33 +1,41 @@
 const db = require("../config/db");
 
-const Address = {
-    create: (customerId, street, city, state, zip, callback) => {
-        const sql = `INSERT INTO addresses (customer_id, street, city, state, zip) VALUES (?, ?, ?, ?, ?)`;
-        db.run(sql, [customerId, street, city, state, zip], function (err) {
-            callback(err, { id: this.lastID});
-        });
+const Customer = {
+    getAll: (callback) => {
+        db.all("SELECT * FROM customers", [], callback);
     },
 
-    findByCustomer: (customerId, callback) => {
-        const sql = `SELECT * FROM addresses WHERE customer_id = ?`;
-        db.all(sql, [customerId], (err, rows) => {
-            callback(err, rows);
-        });
+    getById: (id, callback) => {
+        db.get("SELECT * FROM customers WHERE customer_id = ?", [id], callback);
     },
 
-    update: (id, street, city, state, zip, callback) => {
-        const sql = `UPDATE addresses SET street=?, city=?, state=?, zip=? WHERE address_id=?`;
-        db.run(sql, [street, city, state, zip, id], function (err) {
-            callback(err, {changes: this.changes });
-        });
+    create: (customer, callback) => {
+        const {first_name, last_name, phone_number, email, city} = customer;
+        db.run(
+            "INSERT INTO customers (first_name, last_name, phone_number, email, city) VALUES (?, ?, ?, ?, ?)",
+            [first_name, last_name, phone_number, email, city],
+            function(err) {
+                callback(err, { customer_id:this.lastID, ...customer });
+            }
+        );
+    },
+
+    update: (id, customer, callback) => {
+        const {first_name, last_name, phone_number, email, city} = customer;
+        db.run(
+            "UPDATE customers SET first_name = ?, last_name = ?, phone_number = ? WHERE id = ?", 
+            [first_name, last_name, phone_number, email, city, id],
+            function (err) {
+                callback(err, {changes: this.changes});
+            }
+        );
     },
 
     delete: (id, callback) => {
-        const sql = `DELETE FROM addresses WHERE address_id=?`;
-        db.run(sql, [id], function(err) {
-            callback(err, {changes: this.changes});
+        db.run("DELETE FROM customers WHERE id = ?", [id], function (err) {
+            callback(err, {changes: this.changes })
         });
     },
 };
 
-module.exports = Address;
+module.exports = Customer;
